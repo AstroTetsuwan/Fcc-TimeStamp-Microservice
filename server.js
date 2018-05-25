@@ -12,9 +12,32 @@ var app = express();
 app.use(express.static('public'));
 
 // http://expressjs.com/en/starter/basic-routing.html
-app.get("/", function (request, response) {
-  response.sendFile(__dirname + '/views/index.html');
+app.get("/", function (req, res) {
+  res.sendFile(__dirname + '/views/index.html');
 });
+app.get("/*", function (req, res) {
+  res.json(setDateObject(req.url));
+});
+
+function setDateObject(url){
+ var userTime = url.replace("/", "");
+  userTime = userTime.replace(/%20/g, " ");
+     
+  if(isNaN(userTime)){
+    var userDate = new Date(userTime);
+    if(userDate.toString() !== "Invalid Date"){
+      var options = {year: "numeric", month: "long", day: "numeric"};
+      return {unix: userDate.getTime(), natural: userDate.toLocaleDateString("en-US", options)};
+    }else{
+      return {unix: null, natural: null};
+    }
+  }
+  else{
+    var userDate = new Date(parseInt(userTime * 1000));
+    var options = {year: "numeric", month: "long", day: "numeric"};
+    return {unix: userDate.getTime(), natural: userDate.toLocaleDateString("en-US", options)};
+  }
+}
 
 // listen for requests :)
 var listener = app.listen(process.env.PORT, function () {
